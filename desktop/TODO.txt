@@ -1,0 +1,7 @@
+conversational UI in evaluations. (v3.0)
+workflow view. (v3.0)
+stream results (v3.0).
+render charts into graphs.
+bug view (a separate tab).
+elevate testcases to align with apps.
+link redirection (open in custom browser).

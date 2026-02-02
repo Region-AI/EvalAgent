@@ -1,0 +1,66 @@
+[
+  {
+    "key": "eval-login-rc1",
+    "version": "1.2.0-rc.1",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-01",
+    "executor_ids": ["runner-01", "runner-02"],
+    "high_level_goal": "Regression test the login flow on the RC build."
+  },
+  {
+    "key": "eval-login-fix-1-2-0",
+    "version": "1.2.0",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-01",
+    "executor_ids": ["runner-01"],
+    "high_level_goal": "Verify login bug fix on 1.2.0."
+  },
+  {
+    "key": "eval-workspace-1-3-0",
+    "version": "1.3.0",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-04",
+    "executor_ids": ["runner-04"],
+    "high_level_goal": "Validate workspace isolation after team switch."
+  },
+  {
+    "key": "eval-workspace-fix-1-3-1",
+    "version": "1.3.1",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-04",
+    "executor_ids": ["runner-04"],
+    "high_level_goal": "Confirm workspace permission fix in 1.3.1."
+  },
+  {
+    "key": "eval-audit-2-1-0",
+    "version": "2.1.0",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-05",
+    "executor_ids": ["runner-05"],
+    "high_level_goal": "Check audit log pagination behavior."
+  },
+  {
+    "key": "eval-vendor-2-5-0",
+    "version": "2.5.0",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-06",
+    "executor_ids": ["runner-06"],
+    "high_level_goal": "Measure startup timing with vendor plugin enabled."
+  },
+  {
+    "key": "eval-auth-ui",
+    "version": "feat-auth-ui",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-07",
+    "executor_ids": ["runner-07"],
+    "high_level_goal": "Review auth UI behavior on the feature branch."
+  },
+  {
+    "key": "eval-auth-merge",
+    "version": "merge-auth",
+    "execution_mode": "cloud",
+    "assigned_executor_id": "runner-07",
+    "executor_ids": ["runner-07"],
+    "high_level_goal": "Verify auth UI fix after merge."
+  }
+]

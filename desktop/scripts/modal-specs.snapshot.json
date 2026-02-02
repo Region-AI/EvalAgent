@@ -1,0 +1,128 @@
+{
+  "confirmDeleteApp": {
+    "id": "confirm-delete-app",
+    "kind": "confirm",
+    "intent": "confirmDeleteApp",
+    "category": "apps.delete.title",
+    "title": "apps.delete.confirmTitle(name=Example App)",
+    "body": "apps.delete.body",
+    "actions": [
+      {
+        "id": "confirm",
+        "label": "apps.delete.confirm",
+        "kind": "danger",
+        "handler": null
+      },
+      {
+        "id": "cancel",
+        "label": "modal.cancel",
+        "kind": "secondary"
+      }
+    ]
+  },
+  "confirmDeleteVersion": {
+    "id": "confirm-delete-version",
+    "kind": "confirm",
+    "intent": "confirmDeleteVersion",
+    "category": "apps.version.delete.title",
+    "title": "apps.version.delete.confirmTitle(version=1.0.0)",
+    "body": "apps.version.delete.body",
+    "actions": [
+      {
+        "id": "confirm",
+        "label": "apps.version.delete.confirm",
+        "kind": "danger",
+        "handler": null
+      },
+      {
+        "id": "cancel",
+        "label": "modal.cancel",
+        "kind": "secondary"
+      }
+    ]
+  },
+  "confirmDeleteBug": {
+    "id": "confirm-delete-bug",
+    "kind": "confirm",
+    "intent": "confirmDeleteBug",
+    "category": "bugs.delete.title",
+    "title": "bugs.delete.confirmTitle(name=Broken button)",
+    "body": "bugs.delete.body",
+    "actions": [
+      {
+        "id": "confirm",
+        "label": "bugs.delete.confirm",
+        "kind": "danger",
+        "handler": null
+      },
+      {
+        "id": "cancel",
+        "label": "modal.cancel",
+        "kind": "secondary"
+      }
+    ]
+  },
+  "confirmDeleteFix": {
+    "id": "confirm-delete-fix",
+    "kind": "confirm",
+    "intent": "confirmDeleteFix",
+    "category": "bugs.fix.delete.title",
+    "title": "bugs.fix.delete.confirmTitle",
+    "body": "bugs.fix.delete.body",
+    "actions": [
+      {
+        "id": "confirm",
+        "label": "bugs.fix.delete.confirm",
+        "kind": "danger",
+        "handler": null
+      },
+      {
+        "id": "cancel",
+        "label": "modal.cancel",
+        "kind": "secondary"
+      }
+    ]
+  },
+  "confirmDeleteTestCase": {
+    "id": "confirm-delete-testcase",
+    "kind": "confirm",
+    "intent": "confirmDeleteTestCase",
+    "category": "testcase.delete.title",
+    "title": "testcase.delete.confirmTitle",
+    "body": "testcase.delete.body",
+    "actions": [
+      {
+        "id": "confirm",
+        "label": "testcase.delete.confirm",
+        "kind": "danger",
+        "handler": null
+      },
+      {
+        "id": "cancel",
+        "label": "modal.cancel",
+        "kind": "secondary"
+      }
+    ]
+  },
+  "confirmResetExecutor": {
+    "id": "confirm-reset-executor",
+    "kind": "confirm",
+    "intent": "confirmResetExecutor",
+    "category": "settings.executor.reset.title",
+    "title": "settings.executor.reset.confirm",
+    "body": "settings.executor.reset.desc",
+    "actions": [
+      {
+        "id": "confirm",
+        "label": "settings.executor.reset.confirm",
+        "kind": "danger",
+        "handler": null
+      },
+      {
+        "id": "cancel",
+        "label": "modal.cancel",
+        "kind": "secondary"
+      }
+    ]
+  }
+}

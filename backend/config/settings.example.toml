@@ -1,0 +1,20 @@
+[database]
+url = "postgresql+asyncpg://user:password@localhost:5432/app_eval_db"
+
+[redis]
+host = "localhost"
+port = 6379
+
+[llm]
+# OpenAI-compatible base URL. Example for Doubao (ByteDance Ark):
+# base_url = "https://ark.cn-beijing.volces.com/api/v3"
+base_url = "placeholder"
+model_name = "placeholder"
+api_key = "placeholder"
+
+[vllm]
+# Configuration dedicated to the vision-focused model (VLLM pipeline).
+# base_url = "https://ark.cn-beijing.volces.com/api/v3"
+base_url = "placeholder"
+model_name = "placeholder"
+api_key = "placeholder"

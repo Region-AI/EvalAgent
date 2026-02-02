@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <base href="../../" />
+  <title>Compact Mode</title>
+  <meta http-equiv="Content-Security-Policy"
+    content="script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" />
+  <link rel="stylesheet" href="styles/compact.css" />
+  <script src="vendor/lucide.min.js"></script>
+</head>
+
+<body>
+  <div id="compact-root" class="glass">
+    <header class="topbar">
+      <div class="status-block">
+        <span class="pill" id="status-pill" data-i18n="topbar.status.idle">idle</span>
+        <button id="compactAgentToggle" class="btn secondary compact-agent-btn" title="Start or stop agent"
+          data-i18n-attr="title" data-i18n="controls.agent.copy">
+          <i data-lucide="play"></i>
+        </button>
+        <button id="compactPauseToggle" class="btn subtle compact-agent-btn" title="Pause workflow"
+          data-i18n-attr="title" data-i18n="controls.agent.pause" disabled>
+          <i data-lucide="pause"></i>
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <button id="languageToggle" class="icon-btn" title="Toggle language" data-i18n-attr="title"
+          data-i18n="topbar.language.title">
+          <i data-lucide="languages"></i>
+        </button>
+        <button id="themeToggle" class="icon-btn" title="Toggle theme" data-i18n-attr="title"
+          data-i18n="topbar.theme.title">
+          <i data-lucide="moon"></i>
+        </button>
+        <button id="captureToggleBtn" class="icon-btn" title="Make window capturable" data-i18n-attr="title"
+          data-i18n="compact.toolbar.capture.off">
+          <i data-lucide="eye-off"></i>
+        </button>
+        <span id="time-label" class="clock"></span>
+        <button id="expandBtn" title="Return to full mode" data-i18n-attr="title" data-i18n="compact.toolbar.expand">
+          <i data-lucide="maximize-2"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button id="tabTestCase" class="tab-btn">
+        <i data-lucide="clipboard-list"></i>
+        <span data-i18n="compact.tab.testCase">Test Case</span>
+      </button>
+      <button id="tabContext" class="tab-btn active">
+        <i data-lucide="layout-template"></i>
+        <span data-i18n="compact.tab.context">Context</span>
+      </button>
+      <button id="tabLogs" class="tab-btn">
+        <i data-lucide="list"></i>
+        <span data-i18n="compact.tab.logs">Logs</span>
+      </button>
+    </div>
+
+    <div class="content">
+      <section class="pane hidden" id="testCasePane">
+        <div class="panel-header">
+          <h2 data-i18n="compact.test.header">Test Case</h2>
+        </div>
+        <div class="testcase-header">
+          <div class="testcase-id-block">
+            <div class="muted label" data-i18n="compact.test.testCaseId">
+              Test Case ID
+            </div>
+            <div id="testCaseId" class="testcase-id">#—</div>
+            <div class="testcase-target">
+              <div id="testCaseTarget" class="target-text">—</div>
+              <div id="testCaseAppType" class="target-subtext">—</div>
+            </div>
+          </div>
+          <div class="testcase-status">
+            <span class="pill" id="testCaseStatusPill">Unknown</span>
+          </div>
+        </div>
+
+        <div class="context-card evaluation-compact">
+          <div class="muted label" data-i18n="compact.test.evaluation">
+            Evaluation
+          </div>
+          <div class="evaluation-compact-row">
+            <span id="testCaseEvaluationId" class="pill pill-subtle">#—</span>
+            <div class="evaluation-compact-goal">
+              <div class="muted label small" data-i18n="compact.test.goal">
+                Goal
+              </div>
+              <div id="testCaseEvaluationGoal" class="context-value compact">
+                <span data-i18n="compact.test.notAvailable">Not available</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="context-card">
+          <div class="muted label" data-i18n="compact.test.description">
+            Description
+          </div>
+          <div id="testCaseDescription" class="context-value">
+            <span data-i18n="compact.test.notAvailable">Not available</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" id="contextPane">
+        <div class="panel-header">
+          <h2 data-i18n="context.header">Agent Context</h2>
+          <div class="context-meta">
+            <div class="context-meta-chip">
+              <span class="label" data-i18n="compact.context.actions">Actions</span>
+              <strong id="context-actions-count">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="context-goal context-section">
+          <div class="context-section-header">
+            <div class="muted context-section-label" data-i18n="context.goal">Goal</div>
+          </div>
+          <div id="context-goal" class="context-section-body context-goal-value">
+            <span data-i18n="context.goal.placeholder">Waiting for goal...</span>
+          </div>
+        </div>
+
+        <div class="context-scratchpad context-section">
+          <div class="context-section-header">
+            <div class="muted context-section-label" data-i18n="context.scratchpad">
+              Scratchpad
+            </div>
+            <div id="context-scratchpad-count" class="context-section-count muted">
+              0 chars
+            </div>
+          </div>
+          <div id="context-scratchpad" class="context-section-body context-scratchpad-body mono">
+            <span data-i18n="compact.context.scratchpad.placeholder">
+              Scratchpad will stream live thinking.
+            </span>
+          </div>
+        </div>
+
+        <div class="context-sections">
+          <div class="context-actions">
+            <div class="muted context-actions-label" data-i18n="context.actions">
+              Recent Actions
+            </div>
+            <ul id="context-actions-list" class="context-actions-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <main class="logs pane hidden" id="logsPane">
+        <div class="panel-header">
+          <h2 data-i18n="logs.header">Logs</h2>
+          <button id="clearLogs" class="btn subtle" data-i18n="compact.logs.clear">
+            Clear
+          </button>
+        </div>
+        <div class="log-filter-bar">
+          <div id="log-filter-controls-compact" class="log-filters">
+            <label class="log-filter-item" title="System">
+              <input type="checkbox" data-level="system" checked />
+              <span class="log-filter-button color-system" data-i18n="logs.filter.system">System</span>
+            </label>
+            <label class="log-filter-item" title="Job">
+              <input type="checkbox" data-level="job" checked />
+              <span class="log-filter-button color-job" data-i18n="logs.filter.job">Job</span>
+            </label>
+            <label class="log-filter-item" title="Agent">
+              <input type="checkbox" data-level="agent" checked />
+              <span class="log-filter-button color-agent" data-i18n="logs.filter.agent">Agent</span>
+            </label>
+            <label class="log-filter-item" title="Tool">
+              <input type="checkbox" data-level="tool" checked />
+              <span class="log-filter-button color-tool" data-i18n="logs.filter.tool">Tool</span>
+            </label>
+            <label class="log-filter-item" title="Capture">
+              <input type="checkbox" data-level="capture" checked />
+              <span class="log-filter-button color-capture" data-i18n="logs.filter.capture">Capture</span>
+            </label>
+            <label class="log-filter-item" title="Warn">
+              <input type="checkbox" data-level="warn" checked />
+              <span class="log-filter-button color-warn" data-i18n="logs.filter.warn">Warn</span>
+            </label>
+            <label class="log-filter-item" title="Error">
+              <input type="checkbox" data-level="error" checked />
+              <span class="log-filter-button color-error" data-i18n="logs.filter.error">Error</span>
+            </label>
+          </div>
+        </div>
+        <div id="log-container" class="log-list"></div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-root" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="shared/i18n.js"></script>
+  <script src="shared/ui-helpers.js"></script>
+  <script src="shared/context-helpers.js"></script>
+  <script src="pages/compact/compact.js"></script>
+</body>
+
+</html>

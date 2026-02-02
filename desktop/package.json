@@ -1,0 +1,63 @@
+{
+  "name": "app_eval_desktop",
+  "version": "2.2.0",
+  "description": "interactive client for Eval Agent system",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "build": "tsc && node scripts/copy-renderer.js && node scripts/copy-native.js",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "rebuild-native": "node-gyp rebuild --directory ./src/agent/capture/native",
+    "reorder-i18n": "node scripts/reorder-i18n.js",
+    "clean-i18n": "node scripts/clean-i18n.js",
+    "clean-css": "node scripts/clean-css.js",
+    "seed-versions": "node scripts/seed-versions.js",
+    "seed-evaluations": "node scripts/seed-evaluations.js",
+    "seed-bugs": "node scripts/seed-bugs.js",
+    "modal-specs": "node scripts/collect-modal-specs.js > scripts/modal-specs.snapshot.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://localhost:3000/lumingye/app_eval_desktop.git"
+  },
+  "keywords": [
+    "app-evaluation",
+    "agent",
+    "automation",
+    "gui-testing",
+    "electron",
+    "nodejs",
+    "typescript",
+    "ui-tars",
+    "ai"
+  ],
+  "author": "lumingye",
+  "license": "ISC",
+  "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.6",
+    "axios": "^1.13.1",
+    "dotenv": "^17.2.3",
+    "electron-squirrel-startup": "^1.0.1",
+    "form-data": "^4.0.4",
+    "jimp": "^0.22.10"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.10.2",
+    "@electron-forge/maker-deb": "^7.10.2",
+    "@electron-forge/maker-rpm": "^7.10.2",
+    "@electron-forge/maker-squirrel": "^7.10.2",
+    "@electron-forge/maker-zip": "^7.10.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
+    "@electron-forge/plugin-fuses": "^7.10.2",
+    "@electron/fuses": "^1.8.0",
+    "@types/node": "^24.10.0",
+    "@types/screenshot-desktop": "^1.15.0",
+    "electron": "^39.0.0",
+    "node-addon-api": "^8.5.0",
+    "node-gyp": "^11.5.0",
+    "postcss": "^8.4.38",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

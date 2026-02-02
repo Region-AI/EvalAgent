@@ -1,0 +1,200 @@
+[
+    {
+        "version": "1.0.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "release_date": "2025-01-01T00:00:00Z",
+        "change_log": "Initial public release."
+    },
+    {
+        "version": "1.0.1",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            1
+        ],
+        "release_date": "2025-01-03T00:00:00Z",
+        "change_log": "Fixed startup crash."
+    },
+    {
+        "version": "1.1.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            2
+        ],
+        "release_date": "2025-01-10T00:00:00Z",
+        "change_log": "Added basic search."
+    },
+    {
+        "version": "1.2.0-alpha.1",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            3
+        ],
+        "release_date": "2025-01-11T00:00:00Z",
+        "change_log": "Alpha UI shell."
+    },
+    {
+        "version": "1.2.0-alpha.2",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            4
+        ],
+        "release_date": "2025-01-12T00:00:00Z",
+        "change_log": "Navigation refactor."
+    },
+    {
+        "version": "1.1.1",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            3
+        ],
+        "release_date": "2025-01-12T00:00:00Z",
+        "change_log": "Security hotfix."
+    },
+    {
+        "version": "feat-auth",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            3
+        ],
+        "release_date": "2025-01-13T00:00:00Z",
+        "change_log": "Auth groundwork."
+    },
+    {
+        "version": "feat-auth-ui",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            3
+        ],
+        "release_date": "2025-01-13T00:00:00Z",
+        "change_log": "Login UI."
+    },
+    {
+        "version": "merge-auth",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            7,
+            8
+        ],
+        "release_date": "2025-01-16T00:00:00Z",
+        "change_log": "Merged auth backend and UI."
+    },
+    {
+        "version": "1.2.0-rc.1",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            5,
+            9
+        ],
+        "release_date": "2025-01-18T00:00:00Z",
+        "change_log": "Release candidate."
+    },
+    {
+        "version": "1.2.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            10
+        ],
+        "release_date": "2025-01-20T00:00:00Z",
+        "change_log": "UI refresh + auth."
+    },
+    {
+        "version": "1.2.1-lts",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            11
+        ],
+        "release_date": "2025-01-22T00:00:00Z",
+        "change_log": "LTS bugfixes."
+    },
+    {
+        "version": "1.3.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            11
+        ],
+        "release_date": "2025-02-01T00:00:00Z",
+        "change_log": "Team workspaces."
+    },
+    {
+        "version": "1.3.1",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            13
+        ],
+        "release_date": "2025-02-02T00:00:00Z",
+        "change_log": "Workspace permission fix."
+    },
+    {
+        "version": "2.0.0-beta.1",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            13
+        ],
+        "release_date": "2025-02-05T00:00:00Z",
+        "change_log": "New storage engine."
+    },
+    {
+        "version": "2.0.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            15,
+            14
+        ],
+        "release_date": "2025-02-04T00:00:00Z",
+        "change_log": "Major v2 release (hotfix merged)."
+    },
+    {
+        "version": "2.1.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            16
+        ],
+        "release_date": "2025-02-20T00:00:00Z",
+        "change_log": "Audit log."
+    },
+    {
+        "version": "2.3.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            17
+        ],
+        "release_date": "2025-03-05T00:00:00Z",
+        "change_log": "Plugin API."
+    },
+    {
+        "version": "vendor-1.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "release_date": "2025-01-15T00:00:00Z",
+        "change_log": "Imported vendor history."
+    },
+    {
+        "version": "2.5.0",
+        "app_url": "https://example.com",
+        "app_path": null,
+        "previous_version_ids": [
+            18,
+            19
+        ],
+        "release_date": "2025-03-20T00:00:00Z",
+        "change_log": "Integrated vendor plugin."
+    }
+]

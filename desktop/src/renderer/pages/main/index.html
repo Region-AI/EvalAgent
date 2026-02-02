@@ -1,0 +1,1321 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <base href="../../" />
+  <title data-i18n="app.title">Eval Agent</title>
+  <meta http-equiv="Content-Security-Policy"
+    content="script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" />
+  <link rel="stylesheet" href="vendor/modern-css-reset.min.css" />
+  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+  <link rel="stylesheet" href="styles/evaluation.css" />
+  <link rel="stylesheet" href="styles/history.css" />
+  <link rel="stylesheet" href="styles/bugs.css" />
+  <link rel="stylesheet" href="styles/run.css" />
+  <link rel="stylesheet" href="styles/mdeditor.css" />
+  <script src="vendor/lucide.min.js"></script>
+  <script src="vendor/purify.min.js"></script>
+  <script src="vendor/marked.min.js"></script>
+  <script src="vendor/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <!-- Top bar -->
+    <header class="topbar glass topbar-compact">
+      <div class="topbar-brand">
+        <div id="server-status-dot" class="logo-dot server-status-dot"></div>
+        <div class="brand-text">
+          <span class="eyebrow" data-i18n="topbar.brand.eyebrow">Eval</span>
+          <div class="brand-title-line">
+            <span class="brand-title" data-i18n="topbar.brand.title">Agent</span>
+          </div>
+        </div>
+        <span id="server-status-text" class="server-status-text">--</span>
+      </div>
+
+      <div class="topbar-controls">
+        <div class="status-block">
+          <span class="pill" id="status-pill" data-i18n="topbar.status.idle">idle</span>
+          <span id="timestamp" class="time-chip">--:--:--</span>
+        </div>
+        <div class="topbar-actions">
+          <button id="settingsBtn" class="icon-btn" title="Settings" data-i18n-attr="title"
+            data-i18n="topbar.settings.title">
+            <i data-lucide="info"></i>
+          </button>
+          <button id="languageToggle" class="icon-btn" title="Toggle language" data-i18n-attr="title"
+            data-i18n="topbar.language.title">
+            <i data-lucide="languages"></i>
+          </button>
+          <button id="themeToggle" class="icon-btn" title="Toggle theme" data-i18n-attr="title"
+            data-i18n="topbar.theme.title">
+            <i data-lucide="moon"></i>
+          </button>
+
+          <button id="captureToggleBtn" class="icon-btn" title="Make window capturable" data-i18n-attr="title"
+            data-i18n="topbar.capture.title.enable">
+            <i data-lucide="eye-off"></i>
+          </button>
+
+          <button id="compactModeBtn" class="icon-btn" title="Toggle Compact Mode" data-i18n-attr="title"
+            data-i18n="topbar.compact.title">
+            <i data-lucide="minimize-2"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="app-body">
+      <div class="tab-rail">
+        <button class="tab-btn" data-tab="apps">
+          <i data-lucide="layers"></i>
+          <span data-i18n="apps.tab">Apps</span>
+        </button>
+        <button class="tab-btn" data-tab="evaluation">
+          <i data-lucide="list-tree"></i>
+          <span data-i18n="evaluation.tab">Evaluation</span>
+        </button>
+        <button class="tab-btn" data-tab="bugs">
+          <i data-lucide="bug"></i>
+          <span data-i18n="bugs.tab">Bugs</span>
+        </button>
+        <button class="tab-btn active" data-tab="run">
+          <i data-lucide="cpu"></i>
+          <span data-i18n="run.tab">Run</span>
+        </button>
+        <button class="tab-btn" data-tab="history">
+          <i data-lucide="history"></i>
+          <span data-i18n="history.header">Task History</span>
+        </button>
+      </div>
+
+      <div class="tab-body">
+        <!-- Apps tab: app -> version -> version details browser -->
+        <div class="tab-pane" data-tab="apps">
+          <div class="apps-shell">
+            <div class="panel-header apps-header">
+              <div class="panel-title-block">
+                <h2 data-i18n="apps.header">Apps</h2>
+                <p class="panel-subtitle" data-i18n="apps.subtitle">
+                  BROWSE APPS, VERSIONS, AND EVALUATIONS.
+                </p>
+              </div>
+              <div class="apps-toolbar">
+                <input id="appsSearchInput" class="input" type="text" data-i18n="apps.search.placeholder"
+                  data-i18n-attr="placeholder" placeholder="Search apps" />
+                <select id="appsTypeFilter" class="select">
+                  <option value="" data-i18n="apps.filter.all">All</option>
+                  <option value="desktop_app" data-i18n="apps.filter.desktop">
+                    Desktop
+                  </option>
+                  <option value="web_app" data-i18n="apps.filter.web">
+                    Web
+                  </option>
+                </select>
+                <button id="submitAppBtn" class="btn primary" data-i18n="apps.submit.button">
+                  Submit App
+                </button>
+                <button id="appsRefreshBtn" class="icon-btn" title="Refresh apps" data-i18n="apps.refresh"
+                  data-i18n-attr="title">
+                  <i data-lucide="refresh-cw"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="apps-grid">
+              <section class="panel glass apps-panel">
+                <div class="panel-header">
+                  <h3 data-i18n="apps.panel.apps">Apps</h3>
+                </div>
+                <div id="appsList" class="apps-list"></div>
+              </section>
+
+              <section class="panel glass apps-panel">
+                <div class="panel-header apps-panel-header">
+                  <h3 data-i18n="apps.panel.versions">Versions</h3>
+                  <div class="apps-panel-actions">
+                    <button id="addAppVersionBtn" class="btn secondary apps-add-version-btn"
+                      data-i18n="apps.version.add">
+                      Add Version
+                    </button>
+                  </div>
+                </div>
+                <div id="appVersionsList" class="apps-list"></div>
+              </section>
+
+              <section class="panel glass apps-panel">
+                <div class="panel-header">
+                  <h3 data-i18n="apps.panel.versionDetails">Version Details</h3>
+                  <div class="apps-panel-actions">
+                    <button id="editVersionBtn" class="btn subtle apps-detail-btn" data-i18n="apps.version.edit"
+                      disabled>
+                      Edit
+                    </button>
+                    <button id="deleteVersionBtn" class="btn danger apps-detail-btn"
+                      data-i18n="apps.version.delete.confirm" disabled>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+                <div id="appVersionDetails" class="apps-list"></div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evaluation tab: evaluation overview only -->
+        <div class="tab-pane" data-tab="evaluation">
+          <div class="evaluation-shell">
+            <div class="panel-header">
+              <h2 data-i18n="evaluation.header">Evaluation</h2>
+            </div>
+
+            <div class="evaluation-task-intake control-stack">
+              <div class="control-row">
+                <div class="control-copy">
+                  <p class="eyebrow" data-i18n="controls.task.title">
+                    Task Intake
+                  </p>
+                  <p class="control-helper" data-i18n="controls.task.copy">
+                    Upload an executable or submit a URL from a single entry
+                    point.
+                  </p>
+                </div>
+                <div class="control-actions">
+                  <button id="newTaskBtn" class="btn primary" data-i18n="controls.task.button">
+                    Upload Task
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bugs tab: app-scoped bug viewer -->
+        <div class="tab-pane" data-tab="bugs">
+          <div class="bugs-shell">
+            <div class="panel-header bugs-header">
+              <div class="panel-title-block" , style="align-self: center;">
+                <h2 data-i18n="bugs.header">Bugs</h2>
+                <p class="panel-subtitle" data-i18n="bugs.subtitle">
+                  TRACK AND TRIAGE BUGS.
+                </p>
+              </div>
+              <div class="bugs-toolbar">
+                <select id="bugsAppSelect" class="select">
+                  <option value="" data-i18n="bugs.app.select">
+                    Select app
+                  </option>
+                </select>
+                <select id="bugsStatusFilter" class="select" multiple>
+                  <option value="" data-i18n="bugs.filter.status.all">
+                    All status
+                  </option>
+                </select>
+                <select id="bugsSeverityFilter" class="select" multiple>
+                  <option value="" data-i18n="bugs.filter.severity.all">
+                    All severity
+                  </option>
+                </select>
+                <select id="bugsVersionFilter" class="select" multiple>
+                  <option value="" data-i18n="bugs.filter.version.all">
+                    All versions
+                  </option>
+                </select>
+                <select id="bugsFixFilter" class="select" multiple>
+                  <option value="" data-i18n="bugs.filter.fix.all">
+                    All fixes
+                  </option>
+                  <option value="open" data-i18n="bugs.filter.fix.open">
+                    Unfixed
+                  </option>
+                  <option value="fixed" data-i18n="bugs.filter.fix.fixed">
+                    Fixed
+                  </option>
+                </select>
+                <input id="bugsSearchInput" class="input bugs-toolbar-search" type="text"
+                  data-i18n="bugs.search.placeholder" data-i18n-attr="placeholder" placeholder="Search bugs" />
+                <div class="bugs-toolbar-actions">
+                  <button id="bugsNewBtn" class="btn primary" data-i18n="bugs.create">
+                    New Bug
+                  </button>
+                  <button id="bugsRefreshBtn" class="icon-btn" title="Refresh bugs" data-i18n="bugs.refresh"
+                    data-i18n-attr="title">
+                    <i data-lucide="refresh-cw"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="bugs-grid">
+              <section class="panel glass bugs-panel bugs-list-panel">
+                <div class="panel-header">
+                  <h3 data-i18n="bugs.panel.list">Bug List</h3>
+                </div>
+                <div id="bugsList" class="bugs-list"></div>
+              </section>
+
+              <section class="panel glass bugs-panel bugs-detail-panel">
+                <div id="bugsDetail" class="bugs-detail"></div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <!-- Run tab: agent view + controls/logs -->
+        <div class="tab-pane active" data-tab="run">
+          <div class="layout run-layout">
+            <!-- Left: Agent View -->
+            <section class="panel view glass">
+              <div class="panel-header">
+                <h2 data-i18n="view.title">Agent View</h2>
+
+                <div class="controls">
+                  <button id="toggleViewRefreshBtn" class="icon-btn" title="Pause Refresh" data-i18n-attr="title"
+                    data-i18n="view.pause">
+                    <i data-lucide="pause"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="view-body">
+                <div id="placeholder-text" data-i18n="view.placeholder">
+                  Waiting for task...
+                </div>
+
+                <!-- Container wraps the agent view image -->
+                <div id="agent-view-container">
+                  <img id="agent-view-image" alt="Agent View" />
+                  <div id="coords-pill" class="coords-pill">0, 0</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Right: Controls + Logs -->
+            <aside class="panel logs glass">
+              <div class="panel-scroll">
+                <!-- Controls -->
+                <div class="panel-header">
+                  <h2 data-i18n="controls.header">Controls</h2>
+                </div>
+
+                <div class="control-stack">
+                  <div class="control-row">
+                    <div class="control-copy">
+                      <p class="eyebrow" data-i18n="controls.agent.title">
+                        Agent Control
+                      </p>
+                      <p class="control-helper" data-i18n="controls.agent.copy">
+                        Start/stop the agent or pause its workflow.
+                      </p>
+                    </div>
+                    <div class="control-actions">
+                      <button id="toggleAgentBtn" class="btn secondary" data-i18n="controls.agent.start">
+                        Start Agent
+                      </button>
+                      <button id="pauseAgentBtn" class="btn subtle" disabled data-i18n="controls.agent.pause">
+                        Pause
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Agent Context -->
+                <div class="panel-header">
+                  <h2 data-i18n="context.header">Agent Context</h2>
+                  <div class="controls context-meta">
+                    <span class="context-meta-chip" id="context-actions-total">0 <span
+                        data-i18n="context.total">steps</span></span>
+                  </div>
+                </div>
+
+                <div class="context">
+                  <div class="context-summary">
+                    <div class="context-goal context-section">
+                      <div class="context-section-header">
+                        <p class="context-section-label" data-i18n="context.goal">
+                          Goal
+                        </p>
+                      </div>
+                      <div id="context-goal" class="context-section-body context-goal-value" data-i18n="context.goal.placeholder">
+                        Waiting for goal...
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div class="context-scratchpad context-section">
+                    <div class="context-section-header">
+                      <span class="context-section-label" data-i18n="context.scratchpad">Scratchpad</span>
+                      <span id="context-scratchpad-count" class="context-section-count">
+                        0 chars
+                      </span>
+                    </div>
+                    <pre id="context-scratchpad" class="context-section-body context-scratchpad-body" data-i18n="context.scratchpad.placeholder">
+Waiting for agent to think...</pre>
+                  </div>
+
+                  <div class="context-sections">
+                    <div class="context-actions">
+                      <div class="context-actions-header">
+                        <span data-i18n="context.actions">Recent actions</span>
+                        <span id="context-actions-count" class="context-actions-count">0</span>
+                      </div>
+                      <ul id="context-actions-list" class="context-actions-list context-actions-list--tight">
+                        <li class="context-actions-empty" data-i18n="context.actions.empty">
+                          Actions will appear once the agent begins.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Logs -->
+                <div class="panel-header">
+                  <h2 data-i18n="logs.header">Logs</h2>
+                  <div class="controls">
+                    <button id="pauseLogs" class="icon-btn" title="Pause Logs" data-i18n-attr="title"
+                      data-i18n="logs.pause">
+                      <i data-lucide="pause"></i>
+                    </button>
+                    <button id="clearLogs" class="icon-btn" title="Clear Logs" data-i18n-attr="title"
+                      data-i18n="logs.clear">
+                      <i data-lucide="brush-cleaning"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Log Filter Bar -->
+                <div class="log-filter-bar">
+                  <div id="log-filter-controls" class="log-filters">
+                    <label class="log-filter-item" title="System">
+                      <input type="checkbox" data-level="system" checked />
+                      <span class="log-filter-button color-system" data-i18n="logs.filter.system">System</span>
+                    </label>
+
+                    <label class="log-filter-item" title="Job">
+                      <input type="checkbox" data-level="job" checked />
+                      <span class="log-filter-button color-job" data-i18n="logs.filter.job">Job</span>
+                    </label>
+
+                    <label class="log-filter-item" title="Agent">
+                      <input type="checkbox" data-level="agent" checked />
+                      <span class="log-filter-button color-agent" data-i18n="logs.filter.agent">Agent</span>
+                    </label>
+
+                    <label class="log-filter-item" title="Tool">
+                      <input type="checkbox" data-level="tool" checked />
+                      <span class="log-filter-button color-tool" data-i18n="logs.filter.tool">Tool</span>
+                    </label>
+
+                    <label class="log-filter-item" title="Capture">
+                      <input type="checkbox" data-level="capture" checked />
+                      <span class="log-filter-button color-capture" data-i18n="logs.filter.capture">Capture</span>
+                    </label>
+
+                    <label class="log-filter-item" title="Warning">
+                      <input type="checkbox" data-level="warn" checked />
+                      <span class="log-filter-button color-warn" data-i18n="logs.filter.warn">Warn</span>
+                    </label>
+
+                    <label class="log-filter-item" title="Error">
+                      <input type="checkbox" data-level="error" checked />
+                      <span class="log-filter-button color-error" data-i18n="logs.filter.error">Error</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="log-container" class="log-list"></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- History tab: task history extracted -->
+        <div class="tab-pane" data-tab="history">
+          <div class="history-shell">
+            <section class="history-list-pane glass">
+              <div class="panel-header">
+                <h2 data-i18n="history.header">Task History</h2>
+                <div class="controls">
+                  <button id="refreshHistoryBtn" class="icon-btn" title="Refresh history" data-i18n="history.refresh"
+                    data-i18n-attr="title">
+                    <i data-lucide="refresh-cw"></i>
+                  </button>
+                </div>
+              </div>
+              <div id="historyTop" class="history-list-scroll">
+                <div id="historyList" class="history-list">
+                  <div class="history-empty">No tasks yet.</div>
+                </div>
+              </div>
+            </section>
+            <section id="historyDetail" class="history-detail-pane glass">
+              <div class="history-empty">Select a task</div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast-root" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <template id="modal-template">
+    <div class="modal-backdrop hidden">
+      <div class="modal glass task-modal">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" data-modal-eyebrow></p>
+            <h3 data-modal-title></h3>
+            <p class="modal-desc" data-modal-desc></p>
+          </div>
+          <button class="icon-btn modal-close" title="Close" data-modal-close>
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body" data-modal-body></div>
+        <div class="modal-actions" data-modal-actions></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Test Case Create/Edit Modal -->
+  <div id="testCaseModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" id="testCaseModalSubtitle" data-i18n="testcase.modal.subtitle">
+            Test Case
+          </p>
+          <h3 id="testCaseModalTitle" data-i18n="testcase.modal.title.create">
+            Create Test Case
+          </h3>
+        </div>
+        <button id="closeTestCaseModalBtn" class="icon-btn modal-close" title="Close" data-modal-close>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label data-i18n="testcase.form.name">Name</label>
+          <input id="testCaseName" type="text" placeholder="e.g. Validate login" />
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="testcase.form.description">Description</label>
+          <textarea id="testCaseDescription" class="modal-textarea" rows="3"
+            placeholder="Describe what to validate"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label data-i18n="testcase.form.order">Execution Order</label>
+            <input id="testCaseOrder" type="number" min="1" />
+          </div>
+          <div class="form-group">
+            <label data-i18n="testcase.form.executor">Executor</label>
+            <input id="testCaseExecutor" type="text" placeholder="runner-01" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="testcase.form.input">Input JSON</label>
+          <textarea id="testCaseInput" class="modal-textarea" rows="6" placeholder='{"key": "value"}'></textarea>
+          <small class="helper-text" data-i18n="testcase.form.input.hint">
+            Leave empty for an empty object. Must be valid JSON.
+          </small>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelTestCaseBtn" class="btn subtle" data-i18n="testcase.modal.cancel" data-modal-close>
+          Cancel
+        </button>
+        <button id="submitTestCaseBtn" class="btn primary" data-i18n="testcase.modal.save">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal modal-lg">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="settings.subtitle">Settings</p>
+          <h3 data-i18n="app.title">Eval Agent</h3>
+          <p class="modal-desc" data-i18n="settings.desc">
+            Settings and diagnostics.
+          </p>
+        </div>
+        <button id="closeSettingsModalBtn" class="icon-btn modal-close" title="Close" data-i18n="settings.close"
+          data-modal-close data-i18n-attr="title">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body control-stack modal-body-scroll">
+        <div>
+          <p class="eyebrow" data-i18n="settings.section.appearance" style="margin-bottom: 8px; padding-left: 4px">
+            Appearance
+          </p>
+          <div class="control-row">
+            <span class="input-label" style="margin: 0" data-i18n="settings.theme.label">Theme</span>
+            <div class="settings-segmented" id="settingsThemeGroup">
+              <button class="settings-segment" data-settings-theme="light" data-i18n="settings.theme.light">
+                Light
+              </button>
+              <button class="settings-segment" data-settings-theme="dark" data-i18n="settings.theme.dark">
+                Dark
+              </button>
+              <button class="settings-segment" data-settings-theme="system" data-i18n="settings.theme.system">
+                System
+              </button>
+            </div>
+          </div>
+
+          <div class="control-row" style="margin-top: 8px">
+            <span class="input-label" style="margin: 0" data-i18n="settings.language.label">Language</span>
+            <div class="settings-segmented" id="settingsLanguageGroup">
+              <button class="settings-segment" data-settings-language="en" data-i18n="settings.language.en">
+                English
+              </button>
+              <button class="settings-segment" data-settings-language="zh" data-i18n="settings.language.zh">
+                Chinese
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="eyebrow" data-i18n="settings.section.identity"
+            style="margin-bottom: 8px; padding-left: 4px; margin-top: 2px">
+            Identity
+          </p>
+          <div class="control-row">
+            <span class="input-label" style="margin: 0" data-i18n="settings.executor.label">Executor ID</span>
+            <div class="control-actions">
+              <div class="settings-value-code" style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 6px;
+                  padding-right: 4px;
+                ">
+                <span id="settingsExecutorId">--</span>
+                <button id="settingsExecutorResetBtn" class="icon-btn" title="Reset ID" data-i18n-attr="title"
+                  data-i18n="settings.executor.reset" style="width: 16px; height: 16px; padding: 0; opacity: 0.6">
+                  <i data-lucide="refresh-cw" style="width: 10px; height: 10px"></i>
+                </button>
+              </div>
+              <button class="icon-btn settings-copy-btn" data-copy-target="settingsExecutorId" title="Copy"
+                data-i18n-attr="title" data-i18n="settings.copy">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="eyebrow" data-i18n="settings.section.paths"
+            style="margin-bottom: 8px; padding-left: 4px; margin-top: 2px">
+            Data Paths
+          </p>
+
+          <div class="control-row">
+            <span class="input-label" style="margin: 0" data-i18n="settings.paths.userData">User Data</span>
+            <div class="control-actions">
+              <code id="settingsUserDataPath" class="settings-value-code">--</code>
+              <button class="icon-btn settings-copy-btn" data-copy-target="settingsUserDataPath" title="Copy">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="control-row" style="margin-top: 8px">
+            <span class="input-label" style="margin: 0" data-i18n="settings.paths.cache">Cache</span>
+            <div class="control-actions">
+              <code id="settingsCachePath" class="settings-value-code">--</code>
+              <button class="icon-btn settings-copy-btn" data-copy-target="settingsCachePath" title="Copy">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="control-row" style="margin-top: 8px">
+            <span class="input-label" style="margin: 0" data-i18n="settings.paths.logs">Logs</span>
+            <div class="control-actions">
+              <code id="settingsLogsPath" class="settings-value-code">--</code>
+              <button class="icon-btn settings-copy-btn" data-copy-target="settingsLogsPath" title="Copy">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="eyebrow" data-i18n="settings.section.behavior"
+            style="margin-bottom: 8px; padding-left: 4px; margin-top: 2px">
+            Behavior
+          </p>
+          <div class="control-row">
+            <span class="input-label" style="margin: 0" data-i18n="settings.autostart.label">Auto-start</span>
+            <div class="control-actions">
+              <span class="settings-note" data-i18n="settings.autostart.unsupported" style="margin-right: 8px">Not
+                supported</span>
+              <label class="settings-switch">
+                <input id="settingsAutostartToggle" type="checkbox" disabled />
+                <span class="settings-switch-track"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="control-row" style="margin-top: 8px">
+            <span class="input-label" style="margin: 0" data-i18n="settings.capture.label">Default Capture</span>
+            <div class="settings-segmented" id="settingsCaptureGroup">
+              <button class="settings-segment" data-settings-capture="capturable"
+                data-i18n="settings.capture.capturable">
+                Capturable
+              </button>
+              <button class="settings-segment" data-settings-capture="excluded" data-i18n="settings.capture.excluded">
+                Excluded
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="eyebrow" data-i18n="settings.section.build"
+            style="margin-bottom: 8px; padding-left: 4px; margin-top: 2px">
+            Behavior
+          </p>
+          <div class="control-row">
+            <span class="input-label" style="margin: 0" data-i18n="settings.section.build">Build</span>
+            <div class="control-actions">
+              <code id="settingsVersion" class="settings-value-code">--</code>
+              <button class="icon-btn settings-copy-btn" data-copy-target="settingsVersion" title="Copy">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions modal-actions-spaced">
+        <button id="closeSettingsModalFooterBtn" class="btn subtle" data-i18n="settings.close" data-modal-close>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit App Modal -->
+  <div id="submitAppModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="apps.submit.eyebrow">Submit App</p>
+          <h3 data-i18n="apps.submit.title">Register App Version</h3>
+          <p class="modal-desc" data-i18n="apps.submit.desc">
+            Create a new app and version by uploading a build or linking a
+            URL.
+          </p>
+        </div>
+        <button id="closeSubmitAppModalBtn" class="icon-btn modal-close" title="Close" data-modal-close>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label data-i18n="apps.submit.type.label">App Type</label>
+          <div class="task-mode-toggle app-type-toggle">
+            <button class="task-mode-btn active" data-app-type="desktop_app" data-i18n="apps.filter.desktop">
+              Desktop
+            </button>
+            <button class="task-mode-btn" data-app-type="web_app" data-i18n="apps.filter.web">
+              Web
+            </button>
+          </div>
+        </div>
+
+
+        <div class="task-panel" data-app-submit-panel="file">
+          <div id="appSubmitDropZone" class="file-dropzone">
+            <div class="drop-content drop-default">
+              <i data-lucide="upload-cloud" class="drop-icon"></i>
+
+              <p class="file-drop-title" data-i18n="modal.drop.title.combined">
+                Drag & Drop executable or click to browse
+              </p>
+              <p class="file-drop-hint" data-i18n="modal.drop.hint">
+                Supports .exe, .msi, .bat, .app
+              </p>
+            </div>
+            <div class="drop-content drop-active">
+              <i data-lucide="arrow-down-to-line" class="drop-icon bounce"></i>
+              <p class="file-drop-title" data-i18n="modal.drop.release">
+                Release to upload
+              </p>
+            </div>
+
+            <input type="file" id="appSubmitFileInput" class="hidden-input" accept=".exe,.msi,.bat,.cmd,.app" />
+            <div class="file-selected-wrapper no-file">
+              <i data-lucide="file-question" class="icon-empty"></i>
+              <i data-lucide="file-check" class="icon-selected"></i>
+              <span id="appSubmitSelectedFileName" data-i18n="input.noFile">No file selected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-panel hidden" data-app-submit-panel="url">
+          <div class="form-group">
+            <label data-i18n="modal.url.label">Target URL</label>
+            <input id="appSubmitUrlInput" type="url" placeholder="https://example.com" data-i18n="modal.url.placeholder"
+              data-i18n-attr="placeholder" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="modal.app.name.label">App Name</label>
+          <input id="appSubmitNameInput" type="text" placeholder="My App" data-i18n="modal.app.name.placeholder"
+            data-i18n-attr="placeholder" />
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="modal.app.version.label">App Version</label>
+          <input id="appSubmitVersionInput" type="text" placeholder="1.0.0" data-i18n="modal.app.version.placeholder"
+            data-i18n-attr="placeholder" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelSubmitAppBtn" class="btn subtle" data-i18n="modal.cancel" data-modal-close>
+          Cancel
+        </button>
+        <button id="submitAppCommitBtn" class="btn primary" data-i18n="apps.submit.button">
+          Submit App
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Version Modal -->
+  <div id="addVersionModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="apps.version.add.eyebrow">
+            Add Version
+          </p>
+          <h3 data-i18n="apps.version.add.title">Create App Version</h3>
+          <p class="modal-desc">
+            <span data-i18n="apps.version.add.desc">Add a new version for</span>
+            <span id="addVersionAppName">--</span>
+          </p>
+        </div>
+        <button id="closeAddVersionModalBtn" class="icon-btn modal-close" title="Close" data-modal-close>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label data-i18n="apps.version.add.source.label">Source</label>
+          <div class="task-mode-toggle app-version-source-toggle">
+            <button class="task-mode-btn active" data-version-source="file" data-i18n="apps.version.add.source.file">
+              Upload File
+            </button>
+            <button class="task-mode-btn" data-version-source="url" data-i18n="apps.version.add.source.url">
+              URL
+            </button>
+            <button class="task-mode-btn" data-version-source="path" data-i18n="apps.version.add.source.path">
+              Path
+            </button>
+          </div>
+        </div>
+
+        <div class="task-panel" data-version-source-panel="file">
+          <div id="addVersionDropZone" class="file-dropzone">
+            <div class="drop-content drop-default">
+              <i data-lucide="upload-cloud" class="drop-icon"></i>
+
+              <p class="file-drop-title" data-i18n="modal.drop.title.combined">
+                Drag & Drop executable or click to browse
+              </p>
+              <p class="file-drop-hint" data-i18n="modal.drop.hint">
+                Supports .exe, .msi, .bat, .app
+              </p>
+            </div>
+            <div class="drop-content drop-active">
+              <i data-lucide="arrow-down-to-line" class="drop-icon bounce"></i>
+              <p class="file-drop-title" data-i18n="modal.drop.release">
+                Release to upload
+              </p>
+            </div>
+
+            <input type="file" id="addVersionFileInput" class="hidden-input" accept=".exe,.msi,.bat,.cmd,.app" />
+            <div class="file-selected-wrapper no-file">
+              <i data-lucide="file-question" class="icon-empty"></i>
+              <i data-lucide="file-check" class="icon-selected"></i>
+              <span id="addVersionSelectedFileName" data-i18n="input.noFile">No file selected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-panel hidden" data-version-source-panel="url">
+          <div class="form-group">
+            <label data-i18n="apps.version.add.url.label">App URL</label>
+            <input id="addVersionUrlInput" type="url" placeholder="https://example.com"
+              data-i18n="modal.url.placeholder" data-i18n-attr="placeholder" />
+          </div>
+        </div>
+
+        <div class="task-panel hidden" data-version-source-panel="path">
+          <div class="form-group">
+            <label data-i18n="apps.version.add.path.label">Artifact Path</label>
+            <input id="addVersionPathInput" type="text" placeholder="s3://builds/my_app.exe"
+              data-i18n="apps.version.add.path.placeholder" data-i18n-attr="placeholder" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.label">Version</label>
+          <input id="addVersionLabelInput" type="text" placeholder="1.0.1" data-i18n="modal.app.version.placeholder"
+            data-i18n-attr="placeholder" />
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.previous">Previous Version</label>
+          <select id="addVersionPreviousSelect" class="hidden-native-select" multiple></select>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.releaseDate">Release Date</label>
+          <input id="addVersionReleaseDateInput" type="date" />
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.changeLog">Change Log</label>
+          <textarea id="addVersionChangeLogInput" class="modal-textarea" rows="4" placeholder="Summary of changes"
+            data-i18n="apps.version.add.changeLog.placeholder" data-i18n-attr="placeholder"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelAddVersionBtn" class="btn subtle" data-i18n="modal.cancel" data-modal-close>
+          Cancel
+        </button>
+        <button id="submitAddVersionBtn" class="btn primary" data-i18n="apps.version.add.submit">
+          Create Version
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Version Modal -->
+  <div id="editVersionModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="apps.version.edit.eyebrow">
+            Edit Version
+          </p>
+          <h3 data-i18n="apps.version.edit.title">Edit App Version</h3>
+          <p class="modal-desc">
+            <span data-i18n="apps.version.edit.desc">Edit version for</span>
+            <span id="editVersionAppName">--</span>
+          </p>
+        </div>
+        <button id="closeEditVersionModalBtn" class="icon-btn modal-close" title="Close" data-modal-close>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label data-i18n="apps.version.add.source.label">Source</label>
+          <div class="task-mode-toggle app-version-source-toggle">
+            <button class="task-mode-btn active" data-edit-version-source="url" data-i18n="apps.version.add.source.url">
+              URL
+            </button>
+            <button class="task-mode-btn" data-edit-version-source="path" data-i18n="apps.version.add.source.path">
+              Path
+            </button>
+          </div>
+        </div>
+
+        <div class="task-panel" data-edit-version-source-panel="url">
+          <div class="form-group">
+            <label data-i18n="apps.version.add.url.label">App URL</label>
+            <input id="editVersionUrlInput" type="url" placeholder="https://example.com"
+              data-i18n="modal.url.placeholder" data-i18n-attr="placeholder" />
+          </div>
+        </div>
+
+        <div class="task-panel hidden" data-edit-version-source-panel="path">
+          <div class="form-group">
+            <label data-i18n="apps.version.add.path.label">Artifact Path</label>
+            <input id="editVersionPathInput" type="text" placeholder="s3://builds/my_app.exe"
+              data-i18n="apps.version.add.path.placeholder" data-i18n-attr="placeholder" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.label">Version</label>
+          <input id="editVersionLabelInput" type="text" placeholder="1.0.1" data-i18n="modal.app.version.placeholder"
+            data-i18n-attr="placeholder" />
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.previous">Previous Version</label>
+          <select id="editVersionPreviousSelect" class="hidden-native-select" multiple></select>
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.releaseDate">Release Date</label>
+          <input id="editVersionReleaseDateInput" type="date" />
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="apps.version.add.changeLog">Change Log</label>
+          <textarea id="editVersionChangeLogInput" class="modal-textarea" rows="4"
+            data-i18n="apps.version.add.changeLog.placeholder" data-i18n-attr="placeholder"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelEditVersionBtn" class="btn subtle" data-i18n="modal.cancel" data-modal-close>
+          Cancel
+        </button>
+        <button id="submitEditVersionBtn" class="btn primary" data-i18n="apps.version.edit.submit">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bug Modal -->
+  <div id="bugModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="bugs.modal.eyebrow">Bug</p>
+          <h3 id="bugModalTitle" data-i18n="bugs.modal.title.create">Create Bug</h3>
+          <p class="modal-desc" data-i18n="bugs.modal.desc">
+            Track a bug for the selected app version.
+          </p>
+        </div>
+        <button id="closeBugModalBtn" class="icon-btn modal-close" title="Close" data-modal-close>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-columns">
+          <div class="modal-column">
+            <div class="form-group">
+              <label data-i18n="bugs.form.title">Title</label>
+              <input id="bugTitleInput" type="text" placeholder="Short summary" data-i18n-attr="placeholder"
+                data-i18n="bugs.form.title.placeholder" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.form.description">Description</label>
+              <textarea id="bugDescriptionInput" class="modal-textarea" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.form.priority">Priority</label>
+              <input id="bugPriorityInput" type="number" min="0" step="1" placeholder="1" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.form.status">Status</label>
+              <select id="bugStatusInput" class="select"></select>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.form.severity">Severity</label>
+              <select id="bugSeverityInput" class="select"></select>
+            </div>
+          </div>
+          <div class="modal-column">
+            <div class="form-group">
+              <label data-i18n="bugs.form.version">Discovered Version</label>
+              <select id="bugDiscoveredVersionInput" class="select"></select>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.form.fingerprint">Fingerprint</label>
+              <input id="bugFingerprintInput" type="text" placeholder="optional-key" data-i18n-attr="placeholder"
+                data-i18n="bugs.form.fingerprint.placeholder" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.form.environment">Environment (JSON)</label>
+              <textarea id="bugEnvironmentInput" class="modal-textarea" rows="3" placeholder="{ }"></textarea>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.form.reproduction">Reproduction Steps (JSON)</label>
+              <textarea id="bugReproInput" class="modal-textarea" rows="3" placeholder="{ }"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelBugModalBtn" class="btn subtle" data-i18n="modal.cancel" data-modal-close>
+          Cancel
+        </button>
+        <button id="submitBugModalBtn" class="btn primary" data-i18n="bugs.modal.save">
+          Save Bug
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bug Occurrence Modal -->
+  <div id="bugOccurrenceModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="bugs.occurrence.eyebrow">Occurrence</p>
+          <h3 data-i18n="bugs.occurrence.title">Add Occurrence</h3>
+          <p class="modal-desc" data-i18n="bugs.occurrence.desc">
+            Record a specific occurrence for this bug.
+          </p>
+        </div>
+        <button id="closeBugOccurrenceModalBtn" class="icon-btn modal-close" title="Close" data-modal-close>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-columns">
+          <div class="modal-column">
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.evaluation">Evaluation ID</label>
+              <input id="bugOccurrenceEvaluationInput" type="number" min="1" step="1" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.testcase">Test Case ID</label>
+              <input id="bugOccurrenceTestCaseInput" type="number" min="1" step="1" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.version">App Version</label>
+              <select id="bugOccurrenceVersionInput" class="select"></select>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.step">Step Index</label>
+              <input id="bugOccurrenceStepInput" type="number" min="0" step="1" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.action">Action (JSON)</label>
+              <textarea id="bugOccurrenceActionInput" class="modal-textarea" rows="2" placeholder="{ }"></textarea>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.expected">Expected</label>
+              <textarea id="bugOccurrenceExpectedInput" class="modal-textarea" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-column">
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.actual">Actual</label>
+              <textarea id="bugOccurrenceActualInput" class="modal-textarea" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.screenshot.optional">Screenshot URI (optional)</label>
+              <input id="bugOccurrenceScreenshotInput" type="text" placeholder="s3://..." />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.log.optional">Log URI (optional)</label>
+              <input id="bugOccurrenceLogInput" type="text" placeholder="s3://..." />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.raw">Raw Model Coords (JSON)</label>
+              <textarea id="bugOccurrenceRawInput" class="modal-textarea" rows="2" placeholder="{ }"></textarea>
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.observed">Observed At</label>
+              <input id="bugOccurrenceObservedInput" type="datetime-local" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="bugs.occurrence.executor">Executor ID</label>
+              <input id="bugOccurrenceExecutorInput" type="text" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelBugOccurrenceModalBtn" class="btn subtle" data-i18n="modal.cancel" data-modal-close>
+          Cancel
+        </button>
+        <button id="submitBugOccurrenceModalBtn" class="btn primary" data-i18n="bugs.occurrence.save">
+          Save Occurrence
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Intake Modal -->
+  <div id="taskModal" class="modal-backdrop hidden">
+    <div class="modal glass task-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-i18n="modal.newTask">New Task</p>
+          <h3 data-i18n="modal.heading">Upload or Link a Target</h3>
+          <p class="modal-desc" data-i18n="modal.desc">
+            Choose an executable or a web URL to get started.
+          </p>
+        </div>
+        <button id="closeTaskModalBtn" class="icon-btn modal-close" title="Close" data-modal-close>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div id="taskPhaseSlider" class="task-phase-slider" data-phase="app">
+        <div class="task-phase-track">
+          <div class="task-phase" data-task-phase="app">
+            <p class="modal-step" data-i18n="modal.phase.app">
+              Step 1 of 2: App details
+            </p>
+
+            <div class="modal-subsection">
+              <label class="input-label" data-i18n="modal.app.name.label">App Name</label>
+              <div class="modal-input">
+                <i data-lucide="box"></i>
+                <select id="taskAppSelect"></select>
+              </div>
+
+              <label class="input-label" data-i18n="modal.app.version.label">App Version</label>
+              <div class="modal-input">
+                <i data-lucide="tag"></i>
+                <select id="taskAppVersionSelect"></select>
+              </div>
+              <div class="modal-input hidden" id="taskAppVersionInputWrap">
+                <i data-lucide="edit-3"></i>
+                <input type="text" id="taskAppVersionInput" placeholder="1.0.0" data-i18n-attr="placeholder"
+                  data-i18n="modal.app.version.placeholder" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+
+          <div class="task-phase" data-task-phase="source">
+            <p class="modal-step" data-i18n="modal.phase.source">
+              Step 2 of 2: Target
+            </p>
+
+            <div class="task-mode-toggle">
+              <button class="task-mode-btn active" data-task-mode="file">
+                <i data-lucide="package"></i>
+                <span data-i18n="modal.tab.executable">Executable</span>
+              </button>
+              <button class="task-mode-btn" data-task-mode="url">
+                <i data-lucide="globe"></i>
+                <span data-i18n="modal.tab.url">Web URL</span>
+              </button>
+              <button class="task-mode-btn" data-task-mode="live">
+                <i data-lucide="monitor"></i>
+                <span data-i18n="modal.tab.live">Live</span>
+              </button>
+            </div>
+
+            <div class="task-panel" data-task-panel="file">
+              <div id="fileDropZone" class="file-dropzone">
+                <div class="drop-content drop-default">
+                  <i data-lucide="upload-cloud" class="drop-icon"></i>
+
+                  <p class="file-drop-title" data-i18n="modal.drop.title.combined">
+                    Drag & Drop executable or click to browse
+                  </p>
+                  <p class="file-drop-hint" data-i18n="modal.drop.hint">
+                    Supports .exe, .msi, .bat, .app
+                  </p>
+                </div>
+                <div class="drop-content drop-active">
+                  <i data-lucide="arrow-down-to-line" class="drop-icon bounce"></i>
+                  <p class="file-drop-title" data-i18n="modal.drop.release">
+                    Release to upload
+                  </p>
+                </div>
+
+                <input type="file" id="taskFileInput" class="hidden-input" accept=".exe,.msi,.bat,.cmd,.app" />
+                <div class="file-selected-wrapper no-file">
+                  <i data-lucide="file-question" class="icon-empty"></i>
+                  <i data-lucide="file-check" class="icon-selected"></i>
+                  <span id="selectedFileName" data-i18n="modal.noFile">No file selected</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="task-panel hidden" data-task-panel="url">
+              <label class="input-label" data-i18n="modal.url.label">Target URL</label>
+              <div class="modal-input">
+                <i data-lucide="globe"></i>
+                <input type="text" id="taskUrlInput" placeholder="https://example.com" data-i18n-attr="placeholder"
+                  data-i18n="modal.url.placeholder" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="task-panel hidden" data-task-panel="live">
+              <div class="live-panel">
+                <p class="input-label" data-i18n="modal.live.heading">
+                  Live session (current screen)
+                </p>
+                <p class="live-desc" data-i18n="modal.live.desc">
+                  Attach to whatever is already on your screen. No upload or
+                  URL required.
+                </p>
+                <ul class="live-hints">
+                  <li data-i18n="modal.live.hint.capture">
+                    Make the app/window visible so the agent can see it.
+                  </li>
+                  <li data-i18n="modal.live.hint.focus">
+                    Open the target app/browser and leave it in the
+                    foreground.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelTaskBtn" class="btn subtle" data-i18n="modal.cancel" data-task-action="cancel"
+          data-modal-close>
+          Cancel
+        </button>
+        <button id="taskPhaseBackBtn" class="btn subtle" data-i18n="modal.back" data-task-action="back">
+          Back
+        </button>
+        <button id="taskPhaseNextBtn" class="btn primary" data-i18n="modal.next" data-task-action="next">
+          Next
+        </button>
+        <button id="submitTaskBtn" class="btn primary" data-i18n="modal.submit" data-task-action="submit">
+          Upload Task
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared/i18n.js"></script>
+  <script src="shared/date-utils.js"></script>
+  <script src="shared/ui-helpers.js"></script>
+  <script src="shared/modal.js"></script>
+  <script src="shared/modal-intents.js"></script>
+  <script src="shared/context-helpers.js"></script>
+  <script src="pages/main/app.js"></script>
+  <script src="pages/main/evaluation.js"></script>
+  <script src="pages/main/history.js"></script>
+  <script src="pages/main/bugs.js"></script>
+  <script src="pages/main/mdeditor.js"></script>
+  <script src="pages/main/renderer.js"></script>
+</body>
+
+</html>

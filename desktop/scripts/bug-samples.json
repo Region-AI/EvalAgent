@@ -1,0 +1,185 @@
+[
+  {
+    "title": "Login button unresponsive",
+    "description": "Clicking the login button does nothing on some sessions.",
+    "severity_level": "P1",
+    "priority": 1,
+    "status": "IN_PROGRESS",
+    "discovered_version": "1.1.0",
+    "fingerprint": "login-button-noop",
+    "environment": { "os": "Windows 11", "browser": "Edge 120" },
+    "reproduction_steps": {
+      "steps": ["Open the app", "Enter valid credentials", "Click Login"]
+    },
+    "occurrences": [
+      {
+        "app_version": "1.1.0",
+        "step_index": 2,
+        "action": { "tool_name": "click", "selector": "#login" },
+        "expected": "User is signed in.",
+        "actual": "No response and no navigation.",
+        "observed_at": "2025-01-10T08:40:00Z",
+        "executor_id": "runner-01"
+      },
+      {
+        "app_version": "1.2.0-rc.1",
+        "evaluation_ref": "eval-login-rc1",
+        "step_index": 2,
+        "action": { "tool_name": "click", "selector": "#login" },
+        "expected": "User is signed in.",
+        "actual": "Button animates but request never fires.",
+        "observed_at": "2025-01-18T09:15:00Z",
+        "executor_id": "runner-02"
+      }
+    ],
+    "fixes": [
+      {
+        "fixed_in_version": "1.2.0",
+        "verified_by_evaluation_ref": "eval-login-fix-1-2-0",
+        "note": "Auth handler wired to new API."
+      }
+    ]
+  },
+  {
+    "title": "Search results empty on first load",
+    "description": "The initial search request returns empty until a refresh.",
+    "severity_level": "P2",
+    "priority": 3,
+    "status": "NEW",
+    "discovered_version": "1.2.0-alpha.1",
+    "fingerprint": "search-initial-empty",
+    "environment": { "os": "macOS 14", "browser": "Chrome 121" },
+    "reproduction_steps": {
+      "steps": ["Open Search", "Type a query", "Hit Enter"]
+    },
+    "occurrences": [
+      {
+        "app_version": "1.2.0-alpha.2",
+        "step_index": 1,
+        "action": { "tool_name": "keyboard", "keys": "Enter" },
+        "expected": "Results list populates.",
+        "actual": "Empty results with no error.",
+        "observed_at": "2025-01-12T12:10:00Z",
+        "executor_id": "runner-03"
+      }
+    ]
+  },
+  {
+    "title": "Workspace permissions leak between teams",
+    "description": "Users occasionally see projects outside their workspace.",
+    "severity_level": "P0",
+    "priority": 0,
+    "status": "CLOSED",
+    "discovered_version": "1.3.0",
+    "fingerprint": "workspace-permission-leak",
+    "environment": { "os": "Ubuntu 22.04", "browser": "Firefox 122" },
+    "reproduction_steps": {
+      "steps": ["Switch workspace", "Open Projects", "Observe extra items"]
+    },
+    "occurrences": [
+      {
+        "app_version": "1.3.0",
+        "evaluation_ref": "eval-workspace-1-3-0",
+        "step_index": 2,
+        "expected": "Only team projects are visible.",
+        "actual": "Projects from other teams appear.",
+        "observed_at": "2025-02-01T10:30:00Z",
+        "executor_id": "runner-04"
+      }
+    ],
+    "fixes": [
+      {
+        "fixed_in_version": "1.3.1",
+        "verified_by_evaluation_ref": "eval-workspace-fix-1-3-1",
+        "note": "Permission cache scoping corrected."
+      }
+    ]
+  },
+  {
+    "title": "Audit log pagination crashes",
+    "description": "Clicking next page throws a client-side error.",
+    "severity_level": "P2",
+    "priority": 2,
+    "status": "IN_PROGRESS",
+    "discovered_version": "2.1.0",
+    "fingerprint": "audit-log-pagination-crash",
+    "environment": { "os": "Windows 10", "browser": "Chrome 120" },
+    "reproduction_steps": {
+      "steps": ["Open Audit Log", "Click Next page"]
+    },
+    "occurrences": [
+      {
+        "app_version": "2.1.0",
+        "evaluation_ref": "eval-audit-2-1-0",
+        "step_index": 1,
+        "action": { "tool_name": "click", "selector": ".pager-next" },
+        "expected": "Next page loads.",
+        "actual": "Unhandled exception in console.",
+        "observed_at": "2025-02-20T14:05:00Z",
+        "executor_id": "runner-05"
+      }
+    ]
+  },
+  {
+    "title": "Vendor plugin stalls startup",
+    "description": "Startup hangs while loading the vendor plugin.",
+    "severity_level": "P1",
+    "priority": 1,
+    "status": "PENDING_VERIFICATION",
+    "discovered_version": "2.5.0",
+    "fingerprint": "vendor-plugin-startup-stall",
+    "environment": { "os": "Windows 11", "browser": "Edge 121" },
+    "reproduction_steps": {
+      "steps": ["Start the app", "Wait for plugin initialization"]
+    },
+    "occurrences": [
+      {
+        "app_version": "2.5.0",
+        "evaluation_ref": "eval-vendor-2-5-0",
+        "step_index": 0,
+        "expected": "Startup completes in under 10 seconds.",
+        "actual": "Startup stalls for 45 seconds.",
+        "observed_at": "2025-03-20T09:00:00Z",
+        "executor_id": "runner-06"
+      }
+    ],
+    "fixes": [
+      {
+        "fixed_in_version": "2.5.0",
+        "verified_by_evaluation_ref": "eval-vendor-2-5-0",
+        "note": "Plugin load moved to background."
+      }
+    ]
+  },
+  {
+    "title": "Auth UI flickers on submit",
+    "description": "The login form flashes twice when submitting credentials.",
+    "severity_level": "P3",
+    "priority": 4,
+    "status": "PENDING_VERIFICATION",
+    "discovered_version": "feat-auth-ui",
+    "fingerprint": "auth-ui-flicker",
+    "environment": { "os": "macOS 14", "browser": "Safari 17" },
+    "reproduction_steps": {
+      "steps": ["Open Login", "Enter credentials", "Submit form"]
+    },
+    "occurrences": [
+      {
+        "app_version": "feat-auth-ui",
+        "evaluation_ref": "eval-auth-ui",
+        "step_index": 2,
+        "expected": "Single transition to loading state.",
+        "actual": "UI flashes between idle and loading.",
+        "observed_at": "2025-01-13T17:20:00Z",
+        "executor_id": "runner-07"
+      }
+    ],
+    "fixes": [
+      {
+        "fixed_in_version": "merge-auth",
+        "verified_by_evaluation_ref": "eval-auth-merge",
+        "note": "Debounced submit state update."
+      }
+    ]
+  }
+]

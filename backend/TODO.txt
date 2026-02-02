@@ -1,0 +1,6 @@
+Auto correction/deep dive
+Document bug triage output schema and runner result payload expectations.
+Add optional test_cases applicability fields (effective_from_version_id, obsolete_from_version_id).
+Decide whether to normalize test results into a test_results table or keep test_cases.result JSON.
+Update schemas/services/API to expose bug triage metadata if needed.
+More explicit 404 responses.
