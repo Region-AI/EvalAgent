@@ -1,10 +1,10 @@
-# **ENDPOINTS.md — Eval Agent**
+# **ENDPOINTS.md — App Evaluation Agent**
 
-This document specifies the **complete and accurate** HTTP API surface exposed by **Eval Agent**, a hierarchical automated test execution system composed of:
+This document specifies the **complete and accurate** HTTP API surface exposed by **App Evaluation Agent**, a hierarchical automated test execution system composed of:
 
-* **Coordinator Agent** — expands evaluations into a TestPlan and atomic TestCases
+* **Coordinator Agent** - creates executions from app-scoped test cases
 * **Vision Agent** — executes each TestCase step-by-step using LLM reasoning on screenshots
-* **Desktop Runners** — poll for tasks and send screenshots to the backend for action selection
+* **Desktop Runners** — poll for executions and send screenshots to the backend for action selection
 
 Interactive API docs:
 
@@ -17,8 +17,8 @@ Interactive API docs:
 
 * [Apps](#apps)
 * [Evaluations](#evaluations)
-* [Test Plans](#test-plans)
-* [Test Cases](#test-cases)
+* [App Test Cases](#app-test-cases)
+* [Test Case Executions](#test-case-executions)
 * [Bugs](#bugs)
 * [Vision Execution](#vision-execution)
 * [Logs](#logs)
@@ -253,7 +253,7 @@ Create an evaluation for a version.
 }
 ```
 
-Returns: `EvaluationWithTasksRead`.
+Returns: `EvaluationWithExecutionsRead`.
 
 ---
 
@@ -269,15 +269,14 @@ Evaluations represent top-level testing requests such as:
 When an evaluation is created:
 
 1. A new **Evaluation** row is inserted
-2. The **Coordinator Agent** generates a **TestPlan**
-3. Coordinator expands this into a list of **TestCases**
-4. Desktop Runners pick up TestCases via polling
-5. When all TestCases finish, Coordinator generates a **final summary**
+2. The **Coordinator Agent** creates execution rows for the app's fixed test cases
+3. Desktop Runners pick up executions via polling
+4. When all executions finish, Coordinator generates a **final summary**
 
-The API always returns evaluations using **`EvaluationWithTasksRead`**, which includes:
+The API always returns evaluations using **`EvaluationWithExecutionsRead`**, which includes:
 
 * evaluation metadata
-* its generated TestCases
+* its generated executions
 * the original `executor_ids` list (“selectable executors”)
 * `app_name` and `high_level_goal`
 
@@ -311,9 +310,9 @@ Notes:
 }
 ```
 
-### Response — `EvaluationWithTasksRead`
+### Response – `EvaluationWithExecutionsRead`
 
-Includes evaluation + generated tasks + executor list.
+Includes evaluation + generated executions + executor list.
 
 Example:
 
@@ -334,25 +333,21 @@ Example:
     "artifact_uri": "s3://builds/my_app.exe",
     "app_url": null
   },
-  "tasks": [
+  "executions": [
     {
-      "id": 101,
-      "plan_id": 7,
+      "id": 501,
       "evaluation_id": 42,
-      "name": "Open login page",
-      "description": "Navigate to the login page",
-      "input_data": {},
+      "test_case_id": 12,
+      "app_version_id": 7,
       "status": "PENDING",
       "execution_order": 1,
       "assigned_executor_id": "runner-01"
     },
     {
-      "id": 102,
-      "plan_id": 7,
+      "id": 502,
       "evaluation_id": 42,
-      "name": "Verify username field",
-      "description": "Ensure username input is present",
-      "input_data": null,
+      "test_case_id": 13,
+      "app_version_id": 7,
       "status": "PENDING",
       "execution_order": 2,
       "assigned_executor_id": "runner-02"
@@ -382,7 +377,7 @@ Upload a desktop app binary and immediately create an evaluation.
 | high_level_goal      | no       | string   | Natural-language task description         |
 | executor_ids         | yes      | string[] | Candidate runners                         |
 
-Returns: **`EvaluationWithTasksRead`**
+Returns: **`EvaluationWithExecutionsRead`**
 
 ---
 
@@ -402,7 +397,7 @@ Submit a Web application URL.
 | high_level_goal      | no       | string   |
 | executor_ids         | yes      | string[] |
 
-Returns: **`EvaluationWithTasksRead`**
+Returns: **`EvaluationWithExecutionsRead`**
 
 ---
 
@@ -422,13 +417,13 @@ Create an evaluation that uses the **runner’s current screen** (no app file or
 | high_level_goal      | no       | Custom goal               |
 | executor_ids         | yes      | Candidate runners         |
 
-Returns: **`EvaluationWithTasksRead`**
+Returns: **`EvaluationWithExecutionsRead`**
 
 ---
 
 ## **GET /api/v1/evaluations/{evaluation_id}**
 
-Retrieve the evaluation and its tasks.
+Retrieve the evaluation and its executions.
 
 Response shape:
 
@@ -450,7 +445,7 @@ Response shape:
   "execution_mode": "local",
   "high_level_goal": "Test the login page",
   "results": null,
-  "tasks": [...],
+  "executions": [...],
   "selectable_executor_ids": ["runner-01"]
 }
 ```
@@ -517,159 +512,193 @@ Example response (`EvaluationRead`):
 
 ## **DELETE /api/v1/evaluations/{evaluation_id}**
 
-Remove an evaluation and all of its generated artifacts (test plans and test cases).
+Remove an evaluation and all of its generated artifacts (executions and legacy plans/cases).
 
 * Returns **`204 No Content`** when the evaluation is deleted
 * Returns **`404 Not Found`** if the evaluation does not exist
 
 ---
 
-# **Test Plans**
+# **App Test Cases**
 
-Test plans are created automatically by the Coordinator.
-
----
-
-## **GET /api/v1/testplans/{plan_id}**
-
-Return a plan + its test cases.
-
-Example:
-
-```json
-{
-  "id": 7,
-  "evaluation_id": 42,
-  "status": "READY",
-  "summary": {
-    "objectives": [
-      "Verify login success",
-      "Verify invalid credentials error"
-    ]
-  },
-  "test_cases": [
-    { "id": 101, "name": "Valid login", "status": "PENDING" },
-    { "id": 102, "name": "Invalid password", "status": "PENDING" }
-  ]
-}
-```
-
-### Valid `TestPlanStatus`
-
-* `"PENDING"`
-* `"GENERATING"`
-* `"READY"`
-* `"COMPLETED"`
+App test cases are **fixed definitions** owned by the app, not per-evaluation.
+Evaluations create executions from these definitions.
 
 ---
 
-# **Test Cases**
+## **GET /api/v1/apps/{app_id}/testcases**
 
-TestCases represent **atomic UI tasks** (ex: “Click submit button”, “Verify error message visible”).
+List app test case definitions.
 
-Desktop Runners poll test cases and report completion.
+Query params:
+* `limit` (optional, default 50)
+* `offset` (optional, default 0)
+
+Returns: `list[AppTestCaseRead]`.
 
 ---
 
-## **POST /api/v1/testcases**
+## **POST /api/v1/apps/{app_id}/testcases**
 
-Create a new test case under a plan/evaluation.
+Create a new app test case definition.
 
-### Request Body — `TestCaseCreate`
-
-```json
-{
-  "evaluation_id": 42,
-  "plan_id": 7,
-  "name": "New step",
-  "description": "Describe what to validate",
-  "input_data": {},
-  "execution_order": 3,
-  "assigned_executor_id": "runner-01"
-}
-```
-
-### Response — `TestCaseRead`
+### Request Body - `AppTestCaseCreate`
 
 ```json
 {
-  "id": 105,
-  "plan_id": 7,
-  "evaluation_id": 42,
-  "name": "New step",
-  "description": "Describe what to validate",
-  "input_data": {},
-  "status": "PENDING",
-  "execution_order": 3,
-  "assigned_executor_id": "runner-01"
+  "name": "Login succeeds",
+  "description": "Verify valid credentials",
+  "input_data": { "username": "demo" },
+  "priority": 2,
+  "tags": ["auth", "smoke"],
+  "default_executor_id": "runner-01"
 }
 ```
 
 ---
 
-## **GET /api/v1/testcases/next?executor_id=...**
+## **GET /api/v1/apps/{app_id}/testcases/{testcase_id}**
 
-Fetch the next pending test case for a runner (pending cases are visible to all executors).
+Fetch a single app test case.
 
-* Returns **`200 OK` + TestCaseRead** if a task is available
-* Returns **`204 No Content`** if none available
-
-### Example Response
-
-```json
-{
-  "id": 101,
-  "plan_id": 7,
-  "evaluation_id": 42,
-  "name": "Click login button",
-  "description": "Click the login button to submit credentials",
-  "input_data": {},
-  "status": "PENDING",
-  "execution_order": 3,
-  "assigned_executor_id": "runner-01"
-}
-```
-
-> **Note:**
-> There is no field `app_launch_path`.
-> Runners derive launch paths from the app version metadata.
+Returns: `AppTestCaseRead`.
 
 ---
 
-## **PATCH /api/v1/testcases/{testcase_id}**
+## **PATCH /api/v1/apps/{app_id}/testcases/{testcase_id}**
 
-Update a test case’s status or results.
+Update a test case definition.
 
-### Request Body
-
-```json
-{
-  "status": "COMPLETED",
-  "result": {
-    "success": true,
-    "steps": [
-      "Clicked login button",
-      "Observed redirected dashboard"
-    ]
-  }
-}
-```
-
-When all test cases in a plan become `"COMPLETED"`, the backend automatically runs Coordinator summarization.
-
-Updates may also change `name`, `description`, `input_data`, `execution_order`, and `assigned_executor_id`.
-
-If `result` is provided, the backend runs bug triage for the test case. This may create or update bugs
-and will record new bug occurrences based on the result payload.
+Returns: `AppTestCaseRead`.
 
 ---
 
-## **DELETE /api/v1/testcases/{testcase_id}**
+## **DELETE /api/v1/apps/{app_id}/testcases/{testcase_id}**
 
-Delete a test case by ID.
+Delete a test case definition.
 
-* Returns **`204 No Content`** when deleted
-* Returns **`404 Not Found`** if the test case does not exist
+* Returns **`204 No Content`** when deleted.
+* Returns **`404 Not Found`** if the test case does not exist.
+
+---
+
+## **GET /api/v1/apps/{app_id}/versions/{version_id}/testcases**
+
+List test case definitions that apply to a specific version.
+
+Returns: `list[AppTestCaseRead]`.
+
+---
+
+## **Applicability Rules**
+
+Applicability supports non-linear version graphs using rule sets:
+
+* `range`: applies when the evaluation version descends from `effective_from_version_id`
+  and does **not** descend from `obsolete_from_version_id`.
+* `include`: explicit allow-list for a version ID.
+* `exclude`: explicit block-list for a version ID.
+
+### **GET /api/v1/apps/{app_id}/testcases/{testcase_id}/applicability**
+
+List applicability rules for a test case.
+
+Returns: `list[TestCaseApplicabilityRead]`.
+
+### **POST /api/v1/apps/{app_id}/testcases/{testcase_id}/applicability**
+
+Create an applicability rule.
+
+```json
+{
+  "rule_type": "range",
+  "effective_from_version_id": 10,
+  "obsolete_from_version_id": 23
+}
+```
+
+Returns: `TestCaseApplicabilityRead`.
+
+### **PATCH /api/v1/apps/{app_id}/testcases/{testcase_id}/applicability/{rule_id}**
+
+Update an applicability rule.
+
+Returns: `TestCaseApplicabilityRead`.
+
+### **DELETE /api/v1/apps/{app_id}/testcases/{testcase_id}/applicability/{rule_id}**
+
+Delete an applicability rule.
+
+* Returns **`204 No Content`** when deleted.
+* Returns **`404 Not Found`** if the rule does not exist.
+
+---
+
+# **Test Case Executions**
+
+Executions are per-evaluation runs of app test cases. Runners poll executions
+and report results.
+
+---
+
+## **POST /api/v1/executions/evaluations/{evaluation_id}**
+
+Create executions for an evaluation (defaults to all applicable test cases).
+
+### Request Body (optional)
+
+```json
+{
+  "executor_ids": ["runner-01", "runner-02"],
+  "test_case_ids": [12, 13]
+}
+```
+
+Returns: `list[TestCaseExecutionRead]`.
+
+---
+
+## **GET /api/v1/executions/evaluations/{evaluation_id}**
+
+List executions for an evaluation.
+
+Returns: `list[TestCaseExecutionRead]`.
+
+---
+
+## **GET /api/v1/executions/next?executor_id=...**
+
+Fetch the next pending execution for a runner.
+
+* Returns `TestCaseExecutionRead` if an execution is available.
+* Returns **`204 No Content`** if no pending executions exist.
+
+---
+
+## **PATCH /api/v1/executions/{execution_id}**
+
+Update execution status or results.
+
+When all executions in an evaluation become `"COMPLETED"` or `"FAILED"`,
+the backend automatically runs summarization.
+
+If `result` is provided, the backend runs bug triage for the execution.
+
+Returns: `TestCaseExecutionRead`.
+
+---
+
+## **DELETE /api/v1/executions/{execution_id}**
+
+Delete an execution by ID.
+
+* Returns **`204 No Content`** when deleted.
+* Returns **`404 Not Found`** if the execution does not exist.
+
+---
+
+> **Compatibility note**
+> `/api/v1/testcases/next` and `/api/v1/testcases/{id}` act as aliases for execution polling and updates.
 
 ---
 
@@ -679,7 +708,7 @@ Bug tracking is exposed via REST endpoints and supports branch-scoped fixes.
 
 Concepts:
 * A **Bug** is the canonical record (deduped by `fingerprint` per app).
-* A **BugOccurrence** links a bug to a specific evaluation/test case/app version.
+* A **BugOccurrence** links a bug to a specific evaluation/execution/app version.
 * A **BugFix** records branch-scoped fixes. A fix only applies to versions that are
   descendants of the `fixed_in_version_id` in the version lineage graph.
 
@@ -700,7 +729,7 @@ Query params:
 * `severity_level` (optional)
 * `app_version_id` (optional)
 * `evaluation_id` (optional)
-* `test_case_id` (optional)
+* `test_case_execution_id` (optional)
 * `limit` (optional, default 50)
 * `offset` (optional, default 0)
 
@@ -777,7 +806,7 @@ Add a new occurrence for a bug.
 ```json
 {
   "evaluation_id": 42,
-  "test_case_id": 101,
+  "test_case_execution_id": 501,
   "app_version_id": 7,
   "step_index": 2,
   "action": { "tool_name": "click_coordinates", "parameters": { "x": 120, "y": 88 } },
@@ -801,7 +830,7 @@ List occurrences for a bug.
 
 Query params:
 * `evaluation_id` (optional)
-* `test_case_id` (optional)
+* `test_case_execution_id` (optional)
 * `app_version_id` (optional)
 * `limit` (optional, default 50)
 * `offset` (optional, default 0)
@@ -899,7 +928,7 @@ Notes:
 Download backend logs.
 Useful for debugging:
 
-* failed test cases
+* failed executions
 * unexpected LLM outputs
 * stalled runners
 * database race conditions
@@ -932,13 +961,6 @@ Useful for debugging:
 * `"FAILED"`
 
 ---
-
-## **TestPlanStatus**
-
-* `"PENDING"`
-* `"GENERATING"`
-* `"READY"`
-* `"COMPLETED"`
 
 ---
 
